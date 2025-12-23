@@ -2,233 +2,216 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Video Feed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nexus Stream</title>
     <style>
-        /* --- ESTILO GERAL (TEMA ESCURO MODERNO) --- */
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            background-color: #000;
-            color: white;
-            display: flex;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden; /* Oculta barra de rolagem geral */
-        }
+        /* Zera tudo para parecer App */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
 
-        /* --- TELA DE LOGIN (O "CADASTRO") --- */
-        #login-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(45deg, #111, #222);
+        /* --- TELA DE LOGIN (Sobreposta) --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            z-index: 999;
-        }
-
-        .login-box {
+            align-items: center;
             text-align: center;
-            background: rgba(255,255,255,0.1);
-            padding: 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .btn-login {
-            display: block;
-            width: 250px;
-            padding: 15px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s;
+        .login-btn {
+            width: 80%; max-width: 300px; padding: 15px; margin: 10px;
+            border-radius: 30px; border: none; font-size: 16px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
+        .btn-tt { background: #000; border: 1px solid #333; color: white; text-shadow: 2px 2px 0 #00f2ea; }
+        .btn-yt { background: #FF0000; color: white; }
 
-        .btn-tiktok { background-color: #000; color: white; border: 1px solid #333; }
-        .btn-youtube { background-color: #FF0000; color: white; }
-        
-        .btn-login:hover { transform: scale(1.05); }
-
-        /* --- O APP (FEED) --- */
-        #app-screen {
-            display: none; /* Começa escondido */
-            width: 100%;
-            max-width: 450px; /* Largura de celular */
-            height: 100%;
-            background: #111;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory; /* Efeito de rolar 1 por 1 */
-            position: relative;
-        }
-
-        /* Esconde barra de rolagem no feed */
-        #app-screen::-webkit-scrollbar { display: none; }
-
-        /* CADA VÍDEO (CARD) */
-        .video-card {
+        /* --- FEED INFINITO --- */
+        #video-feed {
             height: 100vh;
             width: 100%;
-            scroll-snap-align: start;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory; /* O segredo do efeito "travamento" do TikTok */
+        }
+
+        /* Esconde barra de rolagem */
+        #video-feed::-webkit-scrollbar { display: none; }
+
+        /* O CONTAINER DO VÍDEO */
+        .video-container {
             position: relative;
-            border-bottom: 1px solid #333;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        iframe {
             width: 100%;
-            height: 80%; /* Deixa espaço para controles e anúncios */
-            border: none;
+            height: 100vh; /* Ocupa a tela toda */
+            scroll-snap-align: start; /* Para exatamente no começo do vídeo */
+            background: #111;
         }
 
-        /* --- INTERAÇÃO (BOTOES LATERAIS) --- */
-        .interaction-sidebar {
-            position: absolute;
-            right: 10px;
-            bottom: 150px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
+        /* O VÍDEO EM SI */
+        iframe {
+            width: 100%; height: 100%; border: none;
+            /* Truque para cortar as bordas e parecer tela cheia no celular */
+            transform: scale(1.3); 
+            pointer-events: none; /* Impede clicar no vídeo para pausar (usa botões laterais) */
         }
 
-        .action-btn {
-            width: 50px;
-            height: 50px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            border: 2px solid white;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* --- INTERFACE SOBRE O VÍDEO --- */
+        .overlay-ui {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* Deixa o toque passar pro scroll */
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 30%);
         }
 
-        .action-btn.bad { border-color: red; color: red; }
-        .action-btn:active { transform: scale(0.9); }
-
-        /* --- ÁREA DE ANÚNCIO (MONETIZAÇÃO) --- */
-        .ad-banner {
-            height: 10%;
-            background: #222;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #888;
-            border-top: 1px solid #333;
+        .side-bar {
+            position: absolute; right: 10px; bottom: 100px;
+            display: flex; flex-direction: column; gap: 20px;
+            pointer-events: auto; /* Reativa o clique aqui */
         }
 
-        /* Notificação Toast */
-        #toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            display: none;
-            z-index: 1000;
+        .icon-btn {
+            font-size: 30px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            background: none; border: none; cursor: pointer; color: white;
+            transition: transform 0.1s;
+        }
+        .icon-btn:active { transform: scale(0.8); }
+
+        /* --- ANÚNCIOS (Dinheiro) --- */
+        .ad-popup {
+            position: absolute; bottom: 10px; left: 10px; right: 10px;
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+            padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            pointer-events: auto;
+            font-size: 12px; color: #ccc;
         }
     </style>
 </head>
 <body>
 
-    <div id="toast">Dados enviados para o algoritmo!</div>
+    <div id="login-overlay">
+        <h1 style="margin-bottom: 30px;">Nexus Login</h1>
+        
+        <button class="login-btn btn-tt" onclick="autenticar('tiktok')">
+            <span>🎵</span> Entrar com TikTok
+        </button>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <h1>Nexus</h1>
-            <p>Conecte suas contas para curar seu feed.</p>
-            <br>
-            <button class="btn-login btn-tiktok" onclick="fazerLogin('TikTok')">🎵 Entrar com TikTok</button>
-            <button class="btn-login btn-youtube" onclick="fazerLogin('YouTube')">▶️ Entrar com YouTube</button>
-        </div>
+        <button class="login-btn btn-yt" onclick="autenticar('youtube')">
+            <span>▶️</span> Entrar com YouTube
+        </button>
+        
+        <p style="margin-top: 20px; font-size: 12px; color: #888;">
+            Ao entrar, seus likes treinarão o algoritmo.
+        </p>
     </div>
 
-    <div id="app-screen">
-
-        <div class="video-card">
-            <iframe src="https://www.youtube.com/embed/S9bCLPwzSC0?autoplay=0&controls=0&rel=0" title="Video 1"></iframe>
-            
-            <div class="interaction-sidebar">
-                <button class="action-btn" onclick="interagir('like', 'YouTube')">❤️</button>
-                <button class="action-btn" onclick="interagir('comment', 'YouTube')">💬</button>
-                <button class="action-btn bad" onclick="interagir('bad', 'YouTube')">👎</button>
-            </div>
-
-            <div class="ad-banner">
-                [Espaço Publicitário - API AdMob/AdSense]
-            </div>
+    <div id="video-feed">
         </div>
-
-        <div class="video-card">
-            <iframe src="https://www.youtube.com/embed/p1qVzYJ1TzE?controls=0&rel=0" title="Video 2"></iframe>
-            
-            <div class="interaction-sidebar">
-                <button class="action-btn" onclick="interagir('like', 'TikTok')">❤️</button>
-                <button class="action-btn" onclick="interagir('comment', 'TikTok')">💬</button>
-                <button class="action-btn bad" onclick="interagir('bad', 'TikTok')">👎</button>
-            </div>
-
-             <div class="ad-banner">
-                [Publicidade Nativa - Paga mais $$$]
-            </div>
-        </div>
-
-    </div>
 
     <script>
-        // Função para simular o Login
-        function fazerLogin(plataforma) {
-            // Aqui entraria o código real de OAuth2 do Google ou TikTok
-            console.log("Tentando logar com " + plataforma + "...");
-            
-            // Efeito visual: Some a tela de login e mostra o app
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'block';
-            
-            alert("Conectado com sucesso ao " + plataforma + "! Carregando feed personalizado...");
-        }
+        // LISTA DE VÍDEOS (No futuro, isso virá da API)
+        // Usei IDs reais do YouTube Shorts para simular
+        const videoList = [
+            'S9bCLPwzSC0', // Exemplo 1
+            'p1qVzYJ1TzE', // Exemplo 2
+            'NBsL1V6p7cM', // Exemplo 3
+            'GgG6qN_t3jM'  // Exemplo 4
+        ];
 
-        // Função que manda o feedback para a "API"
-        function interagir(acao, plataformaOrigem) {
-            const toast = document.getElementById('toast');
-            
-            let mensagem = "";
+        let isLoggedIn = false;
 
-            if(acao === 'like') {
-                mensagem = "❤️ Like enviado para o " + plataformaOrigem;
-                // Aqui você chamaria: fetch('https://api.tiktok.com/like', ...)
-            } else if (acao === 'bad') {
-                mensagem = "👎 Marcado como RUIM. Algoritmo do " + plataformaOrigem + " ajustado.";
-                // Aqui chamaria a API de block/dislike
-            } else {
-                mensagem = "💬 Comentário aberto.";
-            }
-
-            // Mostra a notificação na tela
-            toast.innerText = mensagem;
-            toast.style.display = 'block';
+        // --- FUNÇÃO DE LOGIN (Simulação de OAuth) ---
+        function autenticar(rede) {
+            // AQUI É ONDE A MÁGICA TÉCNICA ACONTECE
+            // 1. Você redirecionaria o usuário para: https://accounts.google.com/o/oauth2/auth...
+            // 2. O usuário aceita
+            // 3. O Google devolve um "Token" pra você controlar a conta dele
             
-            // Some depois de 2 segundos
+            console.log(`Iniciando OAuth 2.0 com ${rede}...`);
+            
+            const btn = event.currentTarget;
+            btn.innerHTML = "Conectando...";
+            
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2000);
+                document.getElementById('login-overlay').style.display = 'none';
+                carregarVideosIniciais();
+                isLoggedIn = true;
+                alert(`Conectado à API do ${rede}! Carregando feed personalizado...`);
+            }, 1500);
         }
-    </script>
 
+        // --- GERADOR DE VÍDEOS (O Feed Infinito) ---
+        function criarSlideVideo(videoId) {
+            const div = document.createElement('div');
+            div.className = 'video-container';
+            
+            div.innerHTML = `
+                <iframe 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&mute=1&loop=1&playlist=${videoId}&showinfo=0&rel=0" 
+                    allow="autoplay; encrypted-media">
+                </iframe>
+                
+                <div class="overlay-ui">
+                    <div class="side-bar">
+                        <div style="text-align:center">
+                            <button class="icon-btn" onclick="acao('like')">❤️</button>
+                            <span style="font-size:12px; font-weight:bold">1.2k</span>
+                        </div>
+                        <div style="text-align:center">
+                            <button class="icon-btn" onclick="acao('comment')">💬</button>
+                            <span style="font-size:12px; font-weight:bold">340</span>
+                        </div>
+                        <button class="icon-btn" onclick="acao('share')">🔗</button>
+                        <button class="icon-btn" style="color:red" onclick="acao('dislike')">👎</button>
+                    </div>
+
+                    <div class="ad-popup" onclick="alert('Indo para o site do anunciante...')">
+                        <b>Patrocinado</b><br>
+                        Compre este produto incrível agora! Clique aqui.
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function carregarVideosIniciais() {
+            const feed = document.getElementById('video-feed');
+            
+            // Carrega os primeiros vídeos da lista
+            videoList.forEach(id => {
+                feed.appendChild(criarSlideVideo(id));
+            });
+
+            // Detectar rolagem para carregar mais (Loop Infinito)
+            feed.addEventListener('scroll', () => {
+                if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 100) {
+                    // Chegou no fim? Adiciona mais vídeos repetidos para testar
+                    carregarMaisVideos();
+                }
+            });
+        }
+
+        function carregarMaisVideos() {
+            const feed = document.getElementById('video-feed');
+            // Pega um vídeo aleatório da lista para parecer infinito
+            const randomId = videoList[Math.floor(Math.random() * videoList.length)];
+            feed.appendChild(criarSlideVideo(randomId));
+            console.log("Novo vídeo carregado (Infinite Scroll)");
+        }
+
+        // --- SISTEMA DE FEEDBACK (API) ---
+        function acao(tipo) {
+            if (!isLoggedIn) return;
+
+            if (tipo === 'dislike') {
+                alert("👎 Feedback enviado: 'Não mostrar vídeos assim'.");
+                // Aqui entraria o código: youtubeApi.videos.rate(id, 'dislike');
+            } else if (tipo === 'like') {
+                // Animação de coração poderia entrar aqui
+                console.log("Like enviado para a API");
+            }
+        }
+
+    </script>
 </body>
 </html>
