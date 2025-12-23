@@ -3,182 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus - Feed Principal</title>
+    <title>Nexus Video Feed</title>
     <style>
-        /* CSS Básico para dar forma à estrutura */
+        /* --- ESTILO GERAL (TEMA ESCURO MODERNO) --- */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            background-color: #f0f2f5; /* Cor de fundo estilo Facebook */
+            background-color: #000;
+            color: white;
             display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden; /* Oculta barra de rolagem geral */
         }
 
-        /* Barra de Navegação Superior */
-        header {
-            background-color: #fff;
-            padding: 10px 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* --- TELA DE LOGIN (O "CADASTRO") --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, #111, #222);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .login-box {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-login {
+            display: block;
+            width: 250px;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .btn-tiktok { background-color: #000; color: white; border: 1px solid #333; }
+        .btn-youtube { background-color: #FF0000; color: white; }
+        
+        .btn-login:hover { transform: scale(1.05); }
+
+        /* --- O APP (FEED) --- */
+        #app-screen {
+            display: none; /* Começa escondido */
+            width: 100%;
+            max-width: 450px; /* Largura de celular */
+            height: 100%;
+            background: #111;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory; /* Efeito de rolar 1 por 1 */
+            position: relative;
+        }
+
+        /* Esconde barra de rolagem no feed */
+        #app-screen::-webkit-scrollbar { display: none; }
+
+        /* CADA VÍDEO (CARD) */
+        .video-card {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            position: relative;
+            border-bottom: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 80%; /* Deixa espaço para controles e anúncios */
+            border: none;
+        }
+
+        /* --- INTERAÇÃO (BOTOES LATERAIS) --- */
+        .interaction-sidebar {
+            position: absolute;
+            right: 10px;
+            bottom: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             align-items: center;
         }
 
-        .logo { font-size: 24px; font-weight: bold; color: #1877f2; }
-
-        /* Layout Principal: 3 Colunas */
-        .container {
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        /* Coluna da Esquerda (Menu) */
-        .sidebar-left { width: 250px; display: none; } /* Escondido em mobile */
-        
-        /* Coluna do Meio (Feed) */
-        .feed { width: 100%; max-width: 600px; }
-
-        /* Coluna da Direita (Anúncios e Tendências) */
-        .sidebar-right { width: 250px; display: none; }
-
-        /* Responsividade para Desktop */
-        @media (min-width: 900px) {
-            .sidebar-left, .sidebar-right { display: block; }
-        }
-
-        /* Estilo dos Posts */
-        .post, .create-post {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        /* --- ÁREAS DE ANÚNCIOS (MONETIZAÇÃO) --- */
-        .ad-space {
-            background-color: #e9e9e9;
-            border: 2px dashed #999;
-            text-align: center;
-            padding: 20px;
-            margin-bottom: 20px;
-            color: #555;
-            font-weight: bold;
-            border-radius: 8px;
-        }
-        
-        .ad-label {
-            display: block;
-            font-size: 10px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            color: #888;
-        }
-
-        /* Botões */
-        button {
-            background-color: #1877f2;
+        .action-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            border: 2px solid white;
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            font-size: 24px;
             cursor: pointer;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:hover { background-color: #166fe5; }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
+        .action-btn.bad { border-color: red; color: red; }
+        .action-btn:active { transform: scale(0.9); }
+
+        /* --- ÁREA DE ANÚNCIO (MONETIZAÇÃO) --- */
+        .ad-banner {
+            height: 10%;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #333;
+        }
+
+        /* Notificação Toast */
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 20px;
             border-radius: 20px;
-            box-sizing: border-box;
+            display: none;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">Nexus</div>
-        <div>
-            <span>Meu Perfil</span>
+    <div id="toast">Dados enviados para o algoritmo!</div>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Nexus</h1>
+            <p>Conecte suas contas para curar seu feed.</p>
+            <br>
+            <button class="btn-login btn-tiktok" onclick="fazerLogin('TikTok')">🎵 Entrar com TikTok</button>
+            <button class="btn-login btn-youtube" onclick="fazerLogin('YouTube')">▶️ Entrar com YouTube</button>
         </div>
-    </header>
+    </div>
 
-    <div class="container">
+    <div id="app-screen">
 
-        <aside class="sidebar-left">
-            <div class="post">
-                <p>🏠 Home</p>
-                <p>👥 Amigos</p>
-                <p>🎥 Vídeos</p>
-                <p>🛒 Marketplace</p>
-            </div>
-        </aside>
-
-        <main class="feed">
+        <div class="video-card">
+            <iframe src="https://www.youtube.com/embed/S9bCLPwzSC0?autoplay=0&controls=0&rel=0" title="Video 1"></iframe>
             
-            <div class="create-post">
-                <input type="text" placeholder="No que você está pensando?">
-                <button>Publicar</button>
+            <div class="interaction-sidebar">
+                <button class="action-btn" onclick="interagir('like', 'YouTube')">❤️</button>
+                <button class="action-btn" onclick="interagir('comment', 'YouTube')">💬</button>
+                <button class="action-btn bad" onclick="interagir('bad', 'YouTube')">👎</button>
             </div>
 
-            <div class="ad-space" id="ad-feed-top">
-                <span class="ad-label">Patrocinado</span>
-                [Espaço para Anúncio Banner 728x90]
+            <div class="ad-banner">
+                [Espaço Publicitário - API AdMob/AdSense]
             </div>
+        </div>
 
-            <div class="post">
-                <h3>Elon Musk (Fake)</h3>
-                <p>Acabei de comprar mais uma rede social. O que devo mudar nela?</p>
-                <div style="margin-top:10px; color:gray;">👍 Curtir · 💬 Comentar</div>
-            </div>
-
-            <div class="post">
-                <h3>Maria Silva</h3>
-                <p>Olhem essa foto do meu cachorro! 🐶</p>
-                <div style="height: 200px; background: #ddd; margin-top: 10px;"></div>
-                <div style="margin-top:10px; color:gray;">👍 Curtir · 💬 Comentar</div>
-            </div>
-
-            <div class="ad-space" id="ad-feed-middle">
-                <span class="ad-label">Publicidade</span>
-                [Anúncio Nativo - Parece um post]
-            </div>
-
-            <div class="post">
-                <h3>Dev Python</h3>
-                <p>Alguém sabe como centralizar uma div?</p>
-                <div style="margin-top:10px; color:gray;">👍 Curtir · 💬 Comentar</div>
-            </div>
-
-        </main>
-
-        <aside class="sidebar-right">
+        <div class="video-card">
+            <iframe src="https://www.youtube.com/embed/p1qVzYJ1TzE?controls=0&rel=0" title="Video 2"></iframe>
             
-            <div class="ad-space" id="ad-sidebar">
-                <span class="ad-label">Patrocinado</span>
-                [Espaço para Anúncio Quadrado 300x250]
+            <div class="interaction-sidebar">
+                <button class="action-btn" onclick="interagir('like', 'TikTok')">❤️</button>
+                <button class="action-btn" onclick="interagir('comment', 'TikTok')">💬</button>
+                <button class="action-btn bad" onclick="interagir('bad', 'TikTok')">👎</button>
             </div>
 
-            <div class="post">
-                <h4>Trending Topics</h4>
-                <ul>
-                    <li>#NexusLaunch</li>
-                    <li>#Tecnologia</li>
-                    <li>#Brasil</li>
-                </ul>
+             <div class="ad-banner">
+                [Publicidade Nativa - Paga mais $$$]
             </div>
-        </aside>
+        </div>
 
     </div>
+
+    <script>
+        // Função para simular o Login
+        function fazerLogin(plataforma) {
+            // Aqui entraria o código real de OAuth2 do Google ou TikTok
+            console.log("Tentando logar com " + plataforma + "...");
+            
+            // Efeito visual: Some a tela de login e mostra o app
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
+            
+            alert("Conectado com sucesso ao " + plataforma + "! Carregando feed personalizado...");
+        }
+
+        // Função que manda o feedback para a "API"
+        function interagir(acao, plataformaOrigem) {
+            const toast = document.getElementById('toast');
+            
+            let mensagem = "";
+
+            if(acao === 'like') {
+                mensagem = "❤️ Like enviado para o " + plataformaOrigem;
+                // Aqui você chamaria: fetch('https://api.tiktok.com/like', ...)
+            } else if (acao === 'bad') {
+                mensagem = "👎 Marcado como RUIM. Algoritmo do " + plataformaOrigem + " ajustado.";
+                // Aqui chamaria a API de block/dislike
+            } else {
+                mensagem = "💬 Comentário aberto.";
+            }
+
+            // Mostra a notificação na tela
+            toast.innerText = mensagem;
+            toast.style.display = 'block';
+            
+            // Some depois de 2 segundos
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+    </script>
 
 </body>
 </html>
