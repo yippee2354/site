@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus - Feed Principal</title>
+    <style>
+        /* CSS Básico para dar forma à estrutura */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f2f5; /* Cor de fundo estilo Facebook */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Barra de Navegação Superior */
+        header {
+            background-color: #fff;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-size: 24px; font-weight: bold; color: #1877f2; }
+
+        /* Layout Principal: 3 Colunas */
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Coluna da Esquerda (Menu) */
+        .sidebar-left { width: 250px; display: none; } /* Escondido em mobile */
+        
+        /* Coluna do Meio (Feed) */
+        .feed { width: 100%; max-width: 600px; }
+
+        /* Coluna da Direita (Anúncios e Tendências) */
+        .sidebar-right { width: 250px; display: none; }
+
+        /* Responsividade para Desktop */
+        @media (min-width: 900px) {
+            .sidebar-left, .sidebar-right { display: block; }
+        }
+
+        /* Estilo dos Posts */
+        .post, .create-post {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* --- ÁREAS DE ANÚNCIOS (MONETIZAÇÃO) --- */
+        .ad-space {
+            background-color: #e9e9e9;
+            border: 2px dashed #999;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #555;
+            font-weight: bold;
+            border-radius: 8px;
+        }
+        
+        .ad-label {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            color: #888;
+        }
+
+        /* Botões */
+        button {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background-color: #166fe5; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Nexus</div>
+        <div>
+            <span>Meu Perfil</span>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <aside class="sidebar-left">
+            <div class="post">
+                <p>🏠 Home</p>
+                <p>👥 Amigos</p>
+                <p>🎥 Vídeos</p>
+                <p>🛒 Marketplace</p>
+            </div>
+        </aside>
+
+        <main class="feed">
+            
+            <div class="create-post">
+                <input type="text" placeholder="No que você está pensando?">
+                <button>Publicar</button>
+            </div>
+
+            <div class="ad-space" id="ad-feed-top">
+                <span class="ad-label">Patrocinado</span>
+                [Espaço para Anúncio Banner 728x90]
+            </div>
+
+            <div class="post">
+                <h3>Elon Musk (Fake)</h3>
+                <p>Acabei de comprar mais uma rede social. O que devo mudar nela?</p>
+                <div style="margin-top:10px; color:gray;">👍 Curtir · 💬 Comentar</div>
+            </div>
+
+            <div class="post">
+                <h3>Maria Silva</h3>
+                <p>Olhem essa foto do meu cachorro! 🐶</p>
+                <div style="height: 200px; background: #ddd; margin-top: 10px;"></div>
+                <div style="margin-top:10px; color:gray;">👍 Curtir · 💬 Comentar</div>
+            </div>
+
+            <div class="ad-space" id="ad-feed-middle">
+                <span class="ad-label">Publicidade</span>
+                [Anúncio Nativo - Parece um post]
+            </div>
+
+            <div class="post">
+                <h3>Dev Python</h3>
+                <p>Alguém sabe como centralizar uma div?</p>
+                <div style="margin-top:10px; color:gray;">👍 Curtir · 💬 Comentar</div>
+            </div>
+
+        </main>
+
+        <aside class="sidebar-right">
+            
+            <div class="ad-space" id="ad-sidebar">
+                <span class="ad-label">Patrocinado</span>
+                [Espaço para Anúncio Quadrado 300x250]
+            </div>
+
+            <div class="post">
+                <h4>Trending Topics</h4>
+                <ul>
+                    <li>#NexusLaunch</li>
+                    <li>#Tecnologia</li>
+                    <li>#Brasil</li>
+                </ul>
+            </div>
+        </aside>
+
+    </div>
+
+</body>
+</html>
